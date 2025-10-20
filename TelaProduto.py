@@ -30,7 +30,7 @@ class TelaProduto(tk.Tk):
         tk.Entry(self, width=40).pack(pady=5)
 
         tk.Button(self, text="Salvar", width=15).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.__init__).pack()
+        tk.Button(self, text="Voltar", width=15, command=self.voltar_produto).pack()
 
     def voltar(self):
         self.destroy()
@@ -40,3 +40,7 @@ class TelaProduto(tk.Tk):
     def limpar_tela(self):
         for widget in self.winfo_children():
             widget.destroy()
+
+    def voltar_produto(self):
+        self.destroy()
+        TelaProduto()

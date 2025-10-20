@@ -1,6 +1,8 @@
 import tkinter as tk
 
 
+
+
 class TelaFuncionario(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -30,12 +32,18 @@ class TelaFuncionario(tk.Tk):
         tk.Entry(self, width=40).pack(pady=5)
 
         tk.Button(self, text="Salvar", width=15).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.__init__).pack()
+        tk.Button(self, text="Voltar", width=15, command=self.voltar_funcionario).pack()
 
     def voltar(self):
         self.destroy()
+        from TelaPrincipal import TelaPrincipal
         TelaPrincipal()
 
     def limpar_tela(self):
         for widget in self.winfo_children():
             widget.destroy()
+
+
+    def voltar_funcionario(self):
+        self.destroy()
+        TelaFuncionario()
