@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-import sqlite3 
+import sqlite3
 
 class TelaFuncionario(tk.Tk):
     def __init__(self):
@@ -64,6 +64,11 @@ class TelaFuncionario(tk.Tk):
             conexao.close()
 
             messagebox.showinfo("Sucesso", "Funcionário cadastrado com sucesso!")
+            self.entry_cpf.delete(0,tk.END)
+            self.entry_nome.delete(0,tk.END)
+            self.entry_login.delete(0,tk.END)
+            self.entry_senha.delete(0,tk.END)
+
 
         except sqlite3.Error as erro:
             messagebox.showerror("Erro", f"Ocorreu um erro ao salvar: {erro}")
