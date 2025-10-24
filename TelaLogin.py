@@ -55,3 +55,6 @@ class TelaLogin(tk.Tk):
 
         except sqlite3.Error as erro:
             messagebox.showerror("Erro de banco", f"Ocorreu um erro: {erro}")
+
+
+
