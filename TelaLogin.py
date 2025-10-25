@@ -1,8 +1,8 @@
 import sqlite3
 import tkinter as tk
 from tkinter import messagebox
+from Metodos import Metodos
 from TelaPrincipal import TelaPrincipal
-
 
 class TelaLogin(tk.Tk):
     def __init__(self):
@@ -23,38 +23,33 @@ class TelaLogin(tk.Tk):
 
         tk.Button(self, text="Entrar", command=self.verificar_login, bg="#007bff", fg="white", width=15).pack(pady=20)
 
+        self.mainloop()
+
     def verificar_login(self):
         login = self.login_entry.get().strip()
         senha = self.senha_entry.get().strip()
 
-        if not login or not senha:
-            messagebox.showwarning("Atenção", "Preencha usuário e senha!")
+        if not Metodos.campos_preenchidos(login, senha):
+            Metodos.msg_aviso("Atenção", "Preencha usuário e senha!")
             return
 
+        conexao = Metodos.conectar()
+        if not conexao:
+            return
         try:
-
-            conexao = sqlite3.connect("mecanica_master.db")
             cursor = conexao.cursor()
-
-
             cursor.execute("""
                 SELECT * FROM funcionarios
                 WHERE login = ? AND senha = ?
             """, (login, senha))
-
-            resultado = cursor.fetchone()  # retorna None se não achar
-
-            conexao.close()
-
+            resultado = cursor.fetchone()
             if resultado:
-                messagebox.showinfo("Sucesso", "Login realizado com sucesso!")
+                Metodos.msg_info("Sucesso", "Login realizado com sucesso!")
                 self.destroy()
                 TelaPrincipal()
             else:
-                messagebox.showerror("Erro", "Usuário ou senha incorretos.")
-
+                Metodos.msg_erro("Erro", "Usuário ou senha incorretos.")
         except sqlite3.Error as erro:
-            messagebox.showerror("Erro de banco", f"Ocorreu um erro: {erro}")
-
-
-
+            Metodos.msg_erro("Erro de banco", f"Ocorreu um erro: {erro}")
+        finally:
+            Metodos.fechar(conexao)
