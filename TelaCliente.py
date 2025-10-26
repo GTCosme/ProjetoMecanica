@@ -4,6 +4,7 @@ from tkinter import messagebox
 from Metodos import Metodos
 from TelaPrincipal import TelaPrincipal
 
+# =================== TELA PRINCIPAL CLIENTE ===================
 class TelaCliente(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -13,38 +14,51 @@ class TelaCliente(tk.Tk):
 
         tk.Label(self, text="TELA CLIENTE", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Button(self, text="Cadastrar Cliente", width=30, command=self.tela_cadastro_cliente).pack(pady=5)
-        tk.Button(self, text="Consultar Cliente", width=30, command=self.consultar_cliente).pack(pady=5)
-        tk.Button(self, text="Modificar Cliente", width=30, command=self.tela_modificar_cliente).pack(pady=5)
-        tk.Button(self, text="Voltar", width=30, command=self.voltar).pack(pady=25)
+        tk.Button(self, text="Cadastrar Cliente", width=25, command=self.abrir_cadastro).pack(pady=5)
+        tk.Button(self, text="Consultar Cliente", width=25, command=self.abrir_consultar).pack(pady=5)
+        tk.Button(self, text="Modificar Cliente", width=25, command=self.abrir_modificar).pack(pady=5)
+        tk.Button(self, text="Voltar", width=25, command=self.voltar).pack(pady=20)
 
         self.mainloop()
 
-    def tela_cadastro_cliente(self):
-        Metodos.limpar_tela(self)
+    def abrir_cadastro(self):
+        self.destroy()
+        CadastroCliente()
+
+    def abrir_consultar(self):
+        self.destroy()
+        ConsultarCliente()
+
+    def abrir_modificar(self):
+        self.destroy()
+        ModificarCliente()
+
+    def voltar(self):
+        self.destroy()
+        TelaPrincipal()
+
+
+# =================== CADASTRO CLIENTE ===================
+class CadastroCliente(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Cadastrar Cliente")
+        self.geometry("600x400")
+        self.resizable(False, False)
 
         tk.Label(self, text="TELA CADASTRO CLIENTE", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Label(self, text="Nome do Cliente:").pack()
-        self.entry_nome = tk.Entry(self, width=40)
-        self.entry_nome.pack(pady=5)
-
-        tk.Label(self, text="CPF:").pack()
-        self.entry_cpf = tk.Entry(self, width=40)
-        self.entry_cpf.pack(pady=5)
+        self.entry_nome = Metodos.criar_entry(self, "Nome do Cliente:")
+        self.entry_cpf = Metodos.criar_entry(self, "CPF:")
         self.entry_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf))
-
-        tk.Label(self, text="Telefone:").pack()
-        self.entry_telefone = tk.Entry(self, width=40)
-        self.entry_telefone.pack(pady=5)
+        self.entry_telefone = Metodos.criar_entry(self, "Telefone:")
         self.entry_telefone.bind("<KeyRelease>", lambda e: Metodos.formatar_telefone(self.entry_telefone))
+        self.entry_email = Metodos.criar_entry(self, "Email:")
 
-        tk.Label(self, text="Email:").pack()
-        self.entry_email = tk.Entry(self, width=40)
-        self.entry_email.pack(pady=5)
+        tk.Button(self, text="Salvar", width=15, command=self.salvar).pack(pady=10)
+        tk.Button(self, text="Voltar", width=15, command=self.voltar).pack(pady=5)
 
-        tk.Button(self, text="Salvar", width=15, command=self.salvar).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_cliente).pack()
+        self.mainloop()
 
     def salvar(self):
         cpf = self.entry_cpf.get().strip()
@@ -63,6 +77,7 @@ class TelaCliente(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
             cursor.execute("""
@@ -79,29 +94,37 @@ class TelaCliente(tk.Tk):
         finally:
             Metodos.fechar(conexao)
 
-    def limpar_campos(self):
-        Metodos.limpar_campos(self.entry_cpf, self.entry_nome, self.entry_email, self.entry_telefone)
+    def voltar(self):
+        self.destroy()
+        TelaCliente()
 
-    def consultar_cliente(self):
-        Metodos.limpar_tela(self)
+
+# =================== CONSULTAR CLIENTE ===================
+class ConsultarCliente(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Consultar Cliente")
+        self.geometry("600x400")
+        self.resizable(False, False)
+
         tk.Label(self, text="CONSULTAR CLIENTE", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Label(self, text="Digite CPF do Cliente:").pack()
-        self.entry_consulta = tk.Entry(self, width=40)
-        self.entry_consulta.pack(pady=5)
-        self.entry_consulta.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_consulta))
-
-        tk.Button(self, text="Consultar", width=15, command=self.exibir_cliente).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_cliente).pack(pady=10)
+        self.entry_cpf = Metodos.criar_entry(self, "Digite o CPF do Cliente:")
+        self.entry_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf))
 
         self.frame_resultado = tk.Frame(self)
         self.frame_resultado.pack(pady=10)
 
-    def exibir_cliente(self):
-        for widget in self.frame_resultado.winfo_children():
-            widget.destroy()
+        tk.Button(self, text="Consultar", width=15, command=self.consultar).pack(pady=5)
+        tk.Button(self, text="Voltar", width=15, command=self.voltar).pack(pady=5)
 
-        cpf = self.entry_consulta.get().strip()
+        self.mainloop()
+
+    def consultar(self):
+        for w in self.frame_resultado.winfo_children():
+            w.destroy()
+
+        cpf = self.entry_cpf.get().strip()
         if not cpf:
             tk.Label(self.frame_resultado, text="Digite o CPF!", fg="red").pack()
             return
@@ -109,15 +132,15 @@ class TelaCliente(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
             cursor.execute("SELECT nome, telefone, email FROM clientes WHERE cpf = ?", (cpf,))
-            resultado = cursor.fetchone()
-            if resultado:
-                nome, telefone, email = resultado
-                tk.Label(self.frame_resultado, text=f"Nome: {nome}", font=("Arial", 12)).pack(anchor="w")
-                tk.Label(self.frame_resultado, text=f"Telefone: {telefone}", font=("Arial", 12)).pack(anchor="w")
-                tk.Label(self.frame_resultado, text=f"Email: {email}", font=("Arial", 12)).pack(anchor="w")
+            cliente = cursor.fetchone()
+            if cliente:
+                tk.Label(self.frame_resultado, text=f"Nome: {cliente[0]}", font=("Arial", 12)).pack(anchor="w")
+                tk.Label(self.frame_resultado, text=f"Telefone: {cliente[1]}", font=("Arial", 12)).pack(anchor="w")
+                tk.Label(self.frame_resultado, text=f"Email: {cliente[2]}", font=("Arial", 12)).pack(anchor="w")
             else:
                 tk.Label(self.frame_resultado, text="Cliente não encontrado!", fg="red").pack()
         except sqlite3.Error as erro:
@@ -125,20 +148,37 @@ class TelaCliente(tk.Tk):
         finally:
             Metodos.fechar(conexao)
 
-    def tela_modificar_cliente(self):
-        Metodos.limpar_tela(self)
+    def voltar(self):
+        self.destroy()
+        TelaCliente()
+
+
+# =================== MODIFICAR CLIENTE ===================
+class ModificarCliente(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Modificar Cliente")
+        self.geometry("600x400")
+        self.resizable(False, False)
+
         tk.Label(self, text="MODIFICAR CLIENTE", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Label(self, text="Digite CPF do Cliente:").pack()
-        self.entry_mod_cpf = tk.Entry(self, width=40)
-        self.entry_mod_cpf.pack(pady=5)
-        self.entry_mod_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_mod_cpf))
+        self.entry_cpf_busca = Metodos.criar_entry(self, "Digite o CPF do Cliente:")
+        self.entry_cpf_busca.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf_busca))
 
-        tk.Button(self, text="Buscar Cliente", width=15, command=self.carregar_cliente).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_cliente).pack()
+        self.frame_edicao = tk.Frame(self)
+        self.frame_edicao.pack(pady=10)
 
-    def carregar_cliente(self):
-        cpf = self.entry_mod_cpf.get().strip()
+        # Guardar referência do botão
+        self.botao_buscar = tk.Button(self, text="Buscar Cliente", width=20, command=self.buscar_cliente)
+        self.botao_buscar.pack(pady=5)
+
+        tk.Button(self, text="Voltar", width=20, command=self.voltar).pack(pady=5)
+
+        self.mainloop()
+
+    def buscar_cliente(self):
+        cpf = self.entry_cpf_busca.get().strip()
         if not cpf:
             Metodos.msg_aviso("Atenção", "Digite o CPF!")
             return
@@ -146,35 +186,27 @@ class TelaCliente(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
             cursor.execute("SELECT nome, telefone, email FROM clientes WHERE cpf = ?", (cpf,))
-            resultado = cursor.fetchone()
-            if resultado:
-                nome, telefone, email = resultado
-                Metodos.limpar_tela(self)
+            cliente = cursor.fetchone()
 
-                tk.Label(self, text="MODIFICAR CLIENTE", font=("Arial", 16, "bold")).pack(pady=20)
+            # Limpa frame de edição
+            for w in self.frame_edicao.winfo_children():
+                w.destroy()
 
-                tk.Label(self, text="Nome:").pack()
-                self.entry_nome_mod = tk.Entry(self, width=40)
-                self.entry_nome_mod.pack(pady=5)
-                self.entry_nome_mod.insert(0, nome)
+            if cliente:
+                self.botao_buscar.destroy()
+                self.entry_nome = Metodos.criar_entry(self.frame_edicao, "Nome:", cliente[0])
+                self.entry_telefone = Metodos.criar_entry(self.frame_edicao, "Telefone:", cliente[1])
+                self.entry_telefone.bind("<KeyRelease>", lambda e: Metodos.formatar_telefone(self.entry_telefone))
+                self.entry_email = Metodos.criar_entry(self.frame_edicao, "Email:", cliente[2])
 
-                tk.Label(self, text="Telefone:").pack()
-                self.entry_telefone_mod = tk.Entry(self, width=40)
-                self.entry_telefone_mod.pack(pady=5)
-                self.entry_telefone_mod.insert(0, telefone)
-                self.entry_telefone_mod.bind("<KeyRelease>", lambda e: Metodos.formatar_telefone(self.entry_telefone_mod))
-
-                tk.Label(self, text="Email:").pack()
-                self.entry_email_mod = tk.Entry(self, width=40)
-                self.entry_email_mod.pack(pady=5)
-                self.entry_email_mod.insert(0, email)
-
-                tk.Button(self, text="Salvar Alterações", width=15,
-                          command=lambda: self.salvar_modificacoes(cpf)).pack(pady=15)
-                tk.Button(self, text="Voltar", width=15, command=self.voltar_cliente).pack()
+                tk.Button(self.frame_edicao, text="Salvar Alterações", width=20,
+                          command=lambda: self.salvar_alteracoes(cpf)).pack(pady=5)
+                tk.Button(self.frame_edicao, text="Excluir Cliente", width=20, fg="red",
+                          command=lambda: self.excluir_cliente(cpf)).pack(pady=5)
             else:
                 Metodos.msg_info("Não encontrado", "Cliente não encontrado!")
         except sqlite3.Error as erro:
@@ -182,10 +214,10 @@ class TelaCliente(tk.Tk):
         finally:
             Metodos.fechar(conexao)
 
-    def salvar_modificacoes(self, cpf):
-        nome = self.entry_nome_mod.get().strip()
-        telefone = self.entry_telefone_mod.get().strip()
-        email = self.entry_email_mod.get().strip()
+    def salvar_alteracoes(self, cpf):
+        nome = self.entry_nome.get().strip()
+        telefone = self.entry_telefone.get().strip()
+        email = self.entry_email.get().strip()
 
         if not Metodos.campos_preenchidos(nome, telefone, email):
             Metodos.msg_aviso("Atenção", "Preencha todos os campos!")
@@ -198,10 +230,14 @@ class TelaCliente(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
-            cursor.execute("UPDATE clientes SET nome = ?, telefone = ?, email = ? WHERE cpf = ?",
-                           (nome, telefone, email, cpf))
+            cursor.execute("""
+                UPDATE clientes
+                SET nome = ?, telefone = ?, email = ?
+                WHERE cpf = ?
+            """, (nome, telefone, email, cpf))
             conexao.commit()
             Metodos.msg_info("Sucesso", "Dados do cliente atualizados com sucesso!")
             self.voltar()
@@ -210,13 +246,33 @@ class TelaCliente(tk.Tk):
         finally:
             Metodos.fechar(conexao)
 
-    def voltar_cliente(self):
-        self.destroy()
-        TelaCliente()
+    def excluir_cliente(self, cpf):
+        confirmar = messagebox.askyesno("Confirmação", "Deseja realmente excluir este cliente?")
+        if not confirmar:
+            return
+
+        conexao = Metodos.conectar()
+        if not conexao:
+            return
+
+        try:
+            cursor = conexao.cursor()
+            cursor.execute("DELETE FROM clientes WHERE cpf = ?", (cpf,))
+            conexao.commit()
+            Metodos.msg_info("Sucesso", "Cliente excluído com sucesso!")
+            for w in self.frame_edicao.winfo_children():
+                self.voltar()
+                w.destroy()
+            self.entry_cpf_busca.delete(0, tk.END)
+        except sqlite3.Error as erro:
+            Metodos.msg_erro("Erro", f"Ocorreu um erro ao excluir: {erro}")
+        finally:
+            Metodos.fechar(conexao)
 
     def voltar(self):
         self.destroy()
-        TelaPrincipal()
+        TelaCliente()
 
-    def limpar_tela(self):
-        Metodos.limpar_tela(self)
+
+if __name__ == "__main__":
+    TelaCliente()

@@ -16,6 +16,7 @@ class TelaProduto(tk.Tk):
         tk.Button(self, text="Cadastrar Produto", width=25, command=self.abrir_cadastro).pack(pady=5)
         tk.Button(self, text="Consultar Quantidade", width=25, command=self.abrir_consultar).pack(pady=5)
         tk.Button(self, text="Modificar Produto", width=25, command=self.abrir_modificar).pack(pady=5)
+        tk.Button(self, text="Excluir Produto", width=25, fg="red", command=self.abrir_excluir).pack(pady=5)
         tk.Button(self, text="Voltar", width=25, command=self.voltar).pack(pady=20)
 
         self.mainloop()
@@ -31,6 +32,10 @@ class TelaProduto(tk.Tk):
     def abrir_modificar(self):
         self.destroy()
         ModificarProduto()
+
+    def abrir_excluir(self):
+        self.destroy()
+        ExcluirProduto()
 
     def voltar(self):
         self.destroy()
@@ -104,7 +109,6 @@ class ConsultarProduto(tk.Tk):
 
         tk.Label(self, text="CONSULTAR QUANTIDADE", font=("Arial", 16, "bold")).pack(pady=20)
 
-        # Campo para digitar ID do produto
         tk.Label(self, text="Digite o ID do Produto:").pack()
         self.entry_id = tk.Entry(self, width=40)
         self.entry_id.pack(pady=5)
@@ -144,12 +148,7 @@ class ConsultarProduto(tk.Tk):
         self.destroy()
         TelaProduto()
 
-
-    def voltar(self):
-        self.destroy()
-        TelaProduto()
-
-# =================== MODIFICAR PRODUTO ===================
+## =================== MODIFICAR PRODUTO ===================
 class ModificarProduto(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -172,6 +171,7 @@ class ModificarProduto(tk.Tk):
         self.mainloop()
 
     def buscar_produto(self):
+        """Busca produto pelo ID e exibe os campos de edição"""
         id_prod = self.entry_id.get().strip()
         if not id_prod:
             Metodos.msg_aviso("Atenção", "Digite o ID do produto!")
@@ -186,17 +186,18 @@ class ModificarProduto(tk.Tk):
             cursor.execute("SELECT nome, tipoProduto, preco, quantidade FROM produtos WHERE id = ?", (id_prod,))
             produto = cursor.fetchone()
 
+            # Limpa o frame de edição antes de criar novos campos
             for widget in self.frame_edicao.winfo_children():
                 widget.destroy()
 
             if produto:
+                # Cria campos com valores atuais
                 self.entry_nome = Metodos.criar_entry(self.frame_edicao, "Nome:", produto[0])
                 self.entry_tipo = Metodos.criar_entry(self.frame_edicao, "Tipo do Produto:", produto[1])
                 self.entry_preco = Metodos.criar_entry(self.frame_edicao, "Preço:", produto[2])
-                vcmd = (self.register(Metodos.validar_preco), "%P")
-                self.entry_preco.config(validate="key", validatecommand=vcmd)
                 self.entry_quantidade = Metodos.criar_entry(self.frame_edicao, "Quantidade:", produto[3])
 
+                # Botões dentro do frame
                 tk.Button(self.frame_edicao, text="Salvar Alterações", width=20, command=self.salvar_alteracoes).pack(pady=5)
                 tk.Button(self.frame_edicao, text="Excluir Produto", width=20, fg="red", command=self.excluir_produto).pack(pady=5)
             else:
@@ -207,6 +208,7 @@ class ModificarProduto(tk.Tk):
             Metodos.fechar(conexao)
 
     def salvar_alteracoes(self):
+        """Atualiza os dados do produto"""
         id_prod = self.entry_id.get().strip()
         nome = self.entry_nome.get().strip()
         tipo = self.entry_tipo.get().strip()
@@ -230,34 +232,46 @@ class ModificarProduto(tk.Tk):
             """, (nome, tipo, preco, quantidade, id_prod))
             conexao.commit()
             Metodos.msg_info("Sucesso", "Produto atualizado com sucesso!")
-            self.buscar_produto()  # atualiza os campos
+            self.voltar()
         except sqlite3.Error as erro:
             Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
         finally:
             Metodos.fechar(conexao)
 
     def excluir_produto(self):
+        """Exclui o produto do banco de dados"""
         id_prod = self.entry_id.get().strip()
         if not id_prod:
             Metodos.msg_aviso("Atenção", "Digite o ID do produto!")
             return
 
-        if messagebox.askyesno("Confirmação", "Deseja realmente excluir este produto?"):
-            conexao = Metodos.conectar()
-            if not conexao:
-                return
-            try:
-                cursor = conexao.cursor()
-                cursor.execute("DELETE FROM produtos WHERE id = ?", (id_prod,))
-                conexao.commit()
-                Metodos.msg_info("Sucesso", "Produto excluído com sucesso!")
-                for w in self.frame_edicao.winfo_children():
-                    w.destroy()
-            except sqlite3.Error as erro:
-                Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
-            finally:
-                Metodos.fechar(conexao)
+        confirmar = messagebox.askyesno("Confirmação", "Deseja realmente excluir este produto?")
+        if not confirmar:
+            return
+
+        conexao = Metodos.conectar()
+        if not conexao:
+            return
+
+        try:
+            cursor = conexao.cursor()
+            cursor.execute("DELETE FROM produtos WHERE id = ?", (id_prod,))
+            conexao.commit()
+
+            Metodos.msg_info("Sucesso", "Produto excluído com sucesso!")
+            self.entry_id.delete(0, tk.END)
+            self.voltar()
+            for w in self.frame_edicao.winfo_children():
+                w.destroy()
+        except sqlite3.Error as erro:
+            Metodos.msg_erro("Erro", f"Ocorreu um erro ao excluir: {erro}")
+        finally:
+            Metodos.fechar(conexao)
 
     def voltar(self):
         self.destroy()
         TelaProduto()
+
+
+if __name__ == "__main__":
+    ModificarProduto()
