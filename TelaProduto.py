@@ -274,4 +274,4 @@ class ModificarProduto(tk.Tk):
 
 
 if __name__ == "__main__":
-    ModificarProduto()
+    CadastroProduto()
