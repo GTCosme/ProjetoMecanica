@@ -97,7 +97,7 @@ class Metodos:
         texto = texto.replace("R$", "").replace(".", "").replace(",", ".").strip()
         try:
             valor = float(texto)
-            # Formata como R$ 1.234,56
+            # Formata Moeda
             valor_formatado = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
             entry.delete(0, tk.END)
             entry.insert(0, valor_formatado)
