@@ -1,23 +1,111 @@
+import customtkinter as ctk
 import sqlite3
-import tkinter as tk
 from tkinter import messagebox
 from Metodos import Metodos
+from PIL import Image
+import os
+
+
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
+
 
 # =================== TELA PRINCIPAL PRODUTO ===================
-class TelaProduto(tk.Tk):
+class TelaProduto(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("TELA PRODUTO")
-        self.geometry("600x400")
+        self.title("Mecânica Masters - Produtos")
+        self.geometry("1000x600")
         self.resizable(False, False)
 
-        tk.Label(self, text="TELA PRODUTO", font=("Arial", 16, "bold")).pack(pady=20)
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Button(self, text="Cadastrar Produto", width=25, command=self.abrir_cadastro).pack(pady=5)
-        tk.Button(self, text="Consultar Quantidade", width=25, command=self.abrir_consultar).pack(pady=5)
-        tk.Button(self, text="Modificar Produto", width=25, command=self.abrir_modificar).pack(pady=5)
-        tk.Button(self, text="Excluir Produto", width=25, fg="red", command=self.abrir_excluir).pack(pady=5)
-        tk.Button(self, text="Voltar", width=25, command=self.voltar).pack(pady=20)
+        # =================== NAVBAR ===================
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
+
+        logo_nav = ctk.CTkImage(
+            light_image=Image.open("img/logo.png"),
+            dark_image=Image.open("img/logo.png"),
+            size=(40, 40)
+        )
+        logo_label = ctk.CTkLabel(navbar, image=logo_nav, text="")
+        logo_label.pack(side="left", padx=20)
+
+        botoes_menu = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", self.abrir_tela_funcionario),
+            ("Clientes", self.abrir_tela_cliente),
+            ("Produtos", lambda: None)
+        ]
+
+        for texto, comando in botoes_menu:
+            botao = ctk.CTkButton(
+                navbar,
+                text=texto,
+                command=comando,
+                fg_color="transparent",
+                hover_color="#E1E1E1",
+                text_color="#222",
+                font=("Arial", 13, "bold"),
+                corner_radius=8,
+                width=100,
+                height=35
+            )
+            botao.pack(side="left", padx=4)
+
+        # =================== CONTEÚDO ===================
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        titulo = ctk.CTkLabel(
+            frame,
+            text="Gerenciamento de Produtos",
+            font=("Arial Black", 28, "bold"),
+            text_color="#222"
+        )
+        titulo.pack(pady=(80, 30))
+
+        botoes_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        botoes_frame.pack(pady=40)
+
+        btn_cadastrar = ctk.CTkButton(
+            botoes_frame,
+            text="Cadastrar Produto",
+            width=200,
+            height=45,
+            fg_color="black",
+            text_color="white",
+            hover_color="#333",
+            command=self.abrir_cadastro
+        )
+        btn_cadastrar.pack(side="left", padx=15)
+
+        btn_consultar = ctk.CTkButton(
+            botoes_frame,
+            text="Consultar Produto",
+            width=200,
+            height=45,
+            fg_color="white",
+            text_color="black",
+            hover_color="#E1E1E1",
+            command=self.abrir_consultar
+        )
+        btn_consultar.pack(side="left", padx=15)
+
+        btn_modificar = ctk.CTkButton(
+            botoes_frame,
+            text="Modificar Produto",
+            width=200,
+            height=45,
+            fg_color="black",
+            text_color="white",
+            hover_color="#333",
+            command=self.abrir_modificar
+        )
+        btn_modificar.pack(side="left", padx=15)
 
         self.mainloop()
 
@@ -33,34 +121,77 @@ class TelaProduto(tk.Tk):
         self.destroy()
         ModificarProduto()
 
-    def abrir_excluir(self):
-        self.destroy()
-        ExcluirProduto()
-
-    def voltar(self):
-        self.destroy()
+    def voltar_tela_inicial(self):
         from TelaPrincipal import TelaPrincipal
-        TelaPrincipal()
+        self.destroy()
+        TelaPrincipal().mainloop()
 
-# =================== CADASTRO PRODUTO ===================
-class CadastroProduto(tk.Tk):
+    def abrir_tela_servico(self):
+        from TelaServico import TelaServico
+        self.destroy()
+        TelaServico()
+
+    def abrir_tela_funcionario(self):
+        from TelaFuncionario import TelaFuncionario
+        self.destroy()
+        TelaFuncionario()
+
+    def abrir_tela_cliente(self):
+        from TelaCliente import TelaCliente
+        self.destroy()
+        TelaCliente()
+
+
+# =================== CADASTRAR PRODUTO ===================
+class CadastroProduto(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Cadastrar Produto")
-        self.geometry("600x400")
+        self.geometry("1000x600")
         self.resizable(False, False)
 
-        tk.Label(self, text="TELA CADASTRO PRODUTO", font=("Arial", 16, "bold")).pack(pady=20)
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        self.entry_id = Metodos.criar_entry(self, "ID:")
-        self.entry_nome = Metodos.criar_entry(self, "Nome do Produto:")
-        self.entry_tipo = Metodos.criar_entry(self, "Tipo do Produto:")
-        self.entry_preco = Metodos.criar_entry(self, "Preço:")
-        self.entry_preco.bind("<FocusOut>", lambda e: Metodos.formatar_moeda(self.entry_preco))
-        self.entry_quantidade = Metodos.criar_entry(self, "Quantidade:")
+        # ======== MENU COPIADO DA TELA PRODUTO ========
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
 
-        tk.Button(self, text="Salvar", width=15, command=self.salvar).pack(pady=10)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar).pack(pady=5)
+        logo_nav = ctk.CTkImage(light_image=Image.open("img/logo.png"), size=(40, 40))
+        ctk.CTkLabel(navbar, image=logo_nav, text="").pack(side="left", padx=20)
+
+        botoes_menu = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", self.abrir_tela_funcionario),
+            ("Clientes", self.abrir_tela_cliente),
+            ("Produtos", self.voltar)
+        ]
+        for texto, comando in botoes_menu:
+            ctk.CTkButton(
+                navbar, text=texto, command=comando, fg_color="transparent",
+                hover_color="#E1E1E1", text_color="#222", font=("Arial", 13, "bold"),
+                corner_radius=8, width=100, height=35
+            ).pack(side="left", padx=4)
+
+        # ======== CONTEÚDO ========
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Cadastro de Produto", font=("Arial Black", 26, "bold")).pack(pady=20)
+
+        self.entry_id = Metodos.criar_entry(frame, "ID:")
+        self.entry_nome = Metodos.criar_entry(frame, "Nome:")
+        self.entry_tipo = Metodos.criar_entry(frame, "Tipo:")
+        self.entry_preco = Metodos.criar_entry(frame, "Preço:")
+        self.entry_preco.bind("<KeyRelease>", lambda e: Metodos.formatar_moeda(self.entry_preco))
+        self.entry_quantidade = Metodos.criar_entry(frame, "Quantidade:")
+
+        botoes = ctk.CTkFrame(frame, fg_color="transparent")
+        botoes.pack(pady=30)
+        ctk.CTkButton(botoes, text="Salvar", width=160, command=self.salvar).pack(pady=5)
+        ctk.CTkButton(botoes, text="Voltar", width=160, fg_color="#AAB7B8",
+                      hover_color="#909497", command=self.voltar).pack(pady=5)
 
         self.mainloop()
 
@@ -90,8 +221,6 @@ class CadastroProduto(tk.Tk):
                                    self.entry_preco, self.entry_quantidade)
         except sqlite3.IntegrityError:
             Metodos.msg_erro("Erro", "ID já cadastrado.")
-        except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro ao salvar: {erro}")
         finally:
             Metodos.fechar(conexao)
 
@@ -99,25 +228,77 @@ class CadastroProduto(tk.Tk):
         self.destroy()
         TelaProduto()
 
-# =================== CONSULTA PRODUTO ===================
-class ConsultarProduto(tk.Tk):
+    def voltar_tela_inicial(self):
+        from TelaPrincipal import TelaPrincipal
+        self.destroy()
+        TelaPrincipal().mainloop()
+
+    def abrir_tela_servico(self):
+        from TelaServico import TelaServico
+        self.destroy()
+        TelaServico()
+
+    def abrir_tela_funcionario(self):
+        from TelaFuncionario import TelaFuncionario
+        self.destroy()
+        TelaFuncionario()
+
+    def abrir_tela_cliente(self):
+        from TelaCliente import TelaCliente
+        self.destroy()
+        TelaCliente()
+
+
+# =================== CONSULTAR PRODUTO ===================
+class ConsultarProduto(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Consultar Produto")
-        self.geometry("600x400")
+        self.geometry("1000x600")
         self.resizable(False, False)
 
-        tk.Label(self, text="CONSULTAR QUANTIDADE", font=("Arial", 16, "bold")).pack(pady=20)
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Label(self, text="Digite o ID do Produto:").pack()
-        self.entry_id = tk.Entry(self, width=40)
+        # ======== MENU IGUAL AO DA TELA PRODUTO ========
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
+
+        logo_nav = ctk.CTkImage(light_image=Image.open("img/logo.png"), size=(40, 40))
+        ctk.CTkLabel(navbar, image=logo_nav, text="").pack(side="left", padx=20)
+
+        botoes_menu = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", self.abrir_tela_funcionario),
+            ("Clientes", self.abrir_tela_cliente),
+            ("Produtos", self.voltar)
+        ]
+        for texto, comando in botoes_menu:
+            ctk.CTkButton(
+                navbar, text=texto, command=comando, fg_color="transparent",
+                hover_color="#E1E1E1", text_color="#222", font=("Arial", 13, "bold"),
+                corner_radius=8, width=100, height=35
+            ).pack(side="left", padx=4)
+
+        # ======== CONTEÚDO ========
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Consultar Produto", font=("Arial Black", 26, "bold")).pack(pady=20)
+
+        ctk.CTkLabel(frame, text="Digite o ID do produto:", font=("Arial", 14)).pack(pady=5)
+        self.entry_id = ctk.CTkEntry(frame, width=300)
         self.entry_id.pack(pady=5)
 
-        self.label_resultado = tk.Label(self, text="", font=("Arial", 12))
-        self.label_resultado.pack(pady=10)
+        self.label_resultado = ctk.CTkLabel(frame, text="", font=("Arial", 14))
+        self.label_resultado.pack(pady=15)
 
-        tk.Button(self, text="Consultar", width=15, command=self.consultar).pack(pady=5)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar).pack(pady=5)
+        botoes = ctk.CTkFrame(frame, fg_color="transparent")
+        botoes.pack(pady=30)
+        ctk.CTkButton(botoes, text="Consultar", width=160, command=self.consultar).pack(pady=5)
+        ctk.CTkButton(botoes, text="Voltar", width=160, fg_color="#AAB7B8",
+                      hover_color="#909497", command=self.voltar).pack(pady=5)
 
         self.mainloop()
 
@@ -130,17 +311,16 @@ class ConsultarProduto(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
-
         try:
             cursor = conexao.cursor()
             cursor.execute("SELECT nome, quantidade FROM produtos WHERE id = ?", (id_prod,))
             resultado = cursor.fetchone()
             if resultado:
-                self.label_resultado.config(text=f"Produto: {resultado[0]}\nQuantidade disponível: {resultado[1]}")
+                self.label_resultado.configure(
+                    text=f"Produto: {resultado[0]}\nQuantidade disponível: {resultado[1]}"
+                )
             else:
-                self.label_resultado.config(text="Produto não encontrado.")
-        except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
+                self.label_resultado.configure(text="Produto não encontrado.")
         finally:
             Metodos.fechar(conexao)
 
@@ -148,68 +328,111 @@ class ConsultarProduto(tk.Tk):
         self.destroy()
         TelaProduto()
 
-## =================== MODIFICAR PRODUTO ===================
-class ModificarProduto(tk.Tk):
+    def voltar_tela_inicial(self):
+        from TelaPrincipal import TelaPrincipal
+        self.destroy()
+        TelaPrincipal().mainloop()
+
+    def abrir_tela_servico(self):
+        from TelaServico import TelaServico
+        self.destroy()
+        TelaServico()
+
+    def abrir_tela_funcionario(self):
+        from TelaFuncionario import TelaFuncionario
+        self.destroy()
+        TelaFuncionario()
+
+    def abrir_tela_cliente(self):
+        from TelaCliente import TelaCliente
+        self.destroy()
+        TelaCliente()
+
+
+# =================== MODIFICAR PRODUTO ===================
+class ModificarProduto(ctk.CTk):
     def __init__(self):
         super().__init__()
         self.title("Modificar Produto")
-        self.geometry("600x400")
+        self.geometry("1000x600")
         self.resizable(False, False)
 
-        tk.Label(self, text="MODIFICAR PRODUTO", font=("Arial", 16, "bold")).pack(pady=20)
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Label(self, text="Digite o ID do Produto:").pack()
-        self.entry_id = tk.Entry(self, width=40)
+        # ======== MENU COPIADO ========
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
+
+        logo_nav = ctk.CTkImage(light_image=Image.open("img/logo.png"), size=(40, 40))
+        ctk.CTkLabel(navbar, image=logo_nav, text="").pack(side="left", padx=20)
+
+        botoes_menu = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", self.abrir_tela_funcionario),
+            ("Clientes", self.abrir_tela_cliente),
+            ("Produtos", self.voltar)
+        ]
+        for texto, comando in botoes_menu:
+            ctk.CTkButton(
+                navbar, text=texto, command=comando, fg_color="transparent",
+                hover_color="#E1E1E1", text_color="#222", font=("Arial", 13, "bold"),
+                corner_radius=8, width=100, height=35
+            ).pack(side="left", padx=4)
+
+        # ======== CONTEÚDO ========
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Modificar Produto", font=("Arial Black", 26, "bold")).pack(pady=20)
+
+        ctk.CTkLabel(frame, text="Digite o ID do produto:", font=("Arial", 14)).pack()
+        self.entry_id = ctk.CTkEntry(frame, width=300)
         self.entry_id.pack(pady=5)
 
-        self.frame_edicao = tk.Frame(self)
+        ctk.CTkButton(frame, text="Buscar Produto", width=160, command=self.buscar_produto).pack(pady=10)
+
+        self.frame_edicao = ctk.CTkFrame(frame, fg_color="transparent")
         self.frame_edicao.pack(pady=10)
 
-        tk.Button(self, text="Buscar Produto", width=20, command=self.buscar_produto).pack(pady=5)
-        tk.Button(self, text="Voltar", width=20, command=self.voltar).pack(pady=5)
+        ctk.CTkButton(frame, text="Voltar", width=160, fg_color="#AAB7B8",
+                      hover_color="#909497", command=self.voltar).pack(pady=15)
 
         self.mainloop()
 
     def buscar_produto(self):
-        """Busca produto pelo ID e exibe os campos de edição"""
         id_prod = self.entry_id.get().strip()
         if not id_prod:
-            Metodos.msg_aviso("Atenção", "Digite o ID do produto!")
+            Metodos.msg_aviso("Atenção", "Digite o ID!")
             return
 
         conexao = Metodos.conectar()
         if not conexao:
             return
 
+        for widget in self.frame_edicao.winfo_children():
+            widget.destroy()
+
         try:
             cursor = conexao.cursor()
-            cursor.execute("SELECT nome, tipoProduto, preco, quantidade FROM produtos WHERE id = ?", (id_prod,))
+            cursor.execute("SELECT nome, tipoProduto, preco, quantidade FROM produtos WHERE id=?", (id_prod,))
             produto = cursor.fetchone()
 
-            # Limpa o frame de edição antes de criar novos campos
-            for widget in self.frame_edicao.winfo_children():
-                widget.destroy()
-
             if produto:
-                # Cria campos com valores atuais
                 self.entry_nome = Metodos.criar_entry(self.frame_edicao, "Nome:", produto[0])
-                self.entry_tipo = Metodos.criar_entry(self.frame_edicao, "Tipo do Produto:", produto[1])
+                self.entry_tipo = Metodos.criar_entry(self.frame_edicao, "Tipo:", produto[1])
                 self.entry_preco = Metodos.criar_entry(self.frame_edicao, "Preço:", produto[2])
                 self.entry_quantidade = Metodos.criar_entry(self.frame_edicao, "Quantidade:", produto[3])
 
-                # Botões dentro do frame
-                tk.Button(self.frame_edicao, text="Salvar Alterações", width=20, command=self.salvar_alteracoes).pack(pady=5)
-                tk.Button(self.frame_edicao, text="Excluir Produto", width=20, fg="red", command=self.excluir_produto).pack(pady=5)
+                ctk.CTkButton(self.frame_edicao, text="Salvar Alterações",
+                              width=160, command=lambda: self.salvar_alteracoes(id_prod)).pack(pady=10)
             else:
-                Metodos.msg_info("Info", "Produto não encontrado!")
-        except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
+                Metodos.msg_info("Info", "Produto não encontrado.")
         finally:
             Metodos.fechar(conexao)
 
-    def salvar_alteracoes(self):
-        """Atualiza os dados do produto"""
-        id_prod = self.entry_id.get().strip()
+    def salvar_alteracoes(self, id_prod):
         nome = self.entry_nome.get().strip()
         tipo = self.entry_tipo.get().strip()
         preco = self.entry_preco.get().strip()
@@ -227,44 +450,12 @@ class ModificarProduto(tk.Tk):
             cursor = conexao.cursor()
             cursor.execute("""
                 UPDATE produtos
-                SET nome = ?, tipoProduto = ?, preco = ?, quantidade = ?
-                WHERE id = ?
+                SET nome=?, tipoProduto=?, preco=?, quantidade=?
+                WHERE id=?
             """, (nome, tipo, preco, quantidade, id_prod))
             conexao.commit()
             Metodos.msg_info("Sucesso", "Produto atualizado com sucesso!")
             self.voltar()
-        except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
-        finally:
-            Metodos.fechar(conexao)
-
-    def excluir_produto(self):
-        """Exclui o produto do banco de dados"""
-        id_prod = self.entry_id.get().strip()
-        if not id_prod:
-            Metodos.msg_aviso("Atenção", "Digite o ID do produto!")
-            return
-
-        confirmar = messagebox.askyesno("Confirmação", "Deseja realmente excluir este produto?")
-        if not confirmar:
-            return
-
-        conexao = Metodos.conectar()
-        if not conexao:
-            return
-
-        try:
-            cursor = conexao.cursor()
-            cursor.execute("DELETE FROM produtos WHERE id = ?", (id_prod,))
-            conexao.commit()
-
-            Metodos.msg_info("Sucesso", "Produto excluído com sucesso!")
-            self.entry_id.delete(0, tk.END)
-            self.voltar()
-            for w in self.frame_edicao.winfo_children():
-                w.destroy()
-        except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro ao excluir: {erro}")
         finally:
             Metodos.fechar(conexao)
 
@@ -272,6 +463,26 @@ class ModificarProduto(tk.Tk):
         self.destroy()
         TelaProduto()
 
+    def voltar_tela_inicial(self):
+        from TelaPrincipal import TelaPrincipal
+        self.destroy()
+        TelaPrincipal().mainloop()
+
+    def abrir_tela_servico(self):
+        from TelaServico import TelaServico
+        self.destroy()
+        TelaServico().mainloop()
+
+    def abrir_tela_funcionario(self):
+        from TelaFuncionario import TelaFuncionario
+        self.destroy()
+        TelaFuncionario()
+
+    def abrir_tela_cliente(self):
+        from TelaCliente import TelaCliente
+        self.destroy()
+        TelaCliente()
+
 
 if __name__ == "__main__":
-    CadastroProduto()
+    TelaProduto()

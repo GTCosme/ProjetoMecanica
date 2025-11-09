@@ -1,3 +1,5 @@
+import os
+
 import customtkinter as ctk
 import sqlite3
 from Metodos import Metodos
@@ -15,6 +17,9 @@ class TelaLogin(ctk.CTk):
         self.title("Mecânica Masters - Login")
         self.geometry("1000x600")
         self.resizable(False, False)
+
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
         # ======================
         # CONTEÚDO CENTRAL
@@ -98,10 +103,9 @@ class TelaLogin(ctk.CTk):
         finally:
             Metodos.fechar(conexao)
 
-    def abrir_tela_principal(self):
-        self.destroy()
-        app = TelaPrincipal()
-        app.mainloop()  # ✅ o loop continua na nova tela
+
+
+
 
 
 if __name__ == "__main__":

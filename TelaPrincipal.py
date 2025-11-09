@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from PIL import Image, ImageEnhance
 from Metodos import Metodos
+import os
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
@@ -13,6 +14,9 @@ class TelaPrincipal(ctk.CTk):
         self.title("Mecânica Masters - Tela Principal")
         self.geometry("1000x600")
         self.resizable(False, False)
+
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
         # ======================
         # IMAGEM DE FUNDO (LOGO CENTRAL TRANSPARENTE)
@@ -118,7 +122,8 @@ class TelaPrincipal(ctk.CTk):
     def abrir_tela_produto(self):
         self.destroy()
         from TelaProduto import TelaProduto
-        TelaProduto()
+        app = TelaProduto()
+        app.mainloop()
 
     def abrir_tela_servico(self):
         self.destroy()
@@ -138,7 +143,9 @@ class TelaPrincipal(ctk.CTk):
     def abrir_perfil(self):
         self.destroy()
         from TelaLogin import TelaLogin
-        TelaLogin()
+        TelaLogin().mainloop()
+
+
 
 
 if __name__ == "__main__":

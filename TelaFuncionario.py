@@ -1,49 +1,161 @@
-import tkinter as tk
-from tkinter import messagebox
+import os
+
+import customtkinter as ctk
+from PIL import Image
 import sqlite3
 from Metodos import Metodos
-from TelaPrincipal import TelaPrincipal
 
-class TelaFuncionario(tk.Tk):
+ctk.set_appearance_mode("light")
+ctk.set_default_color_theme("blue")
+
+
+# =================== TELA PRINCIPAL FUNCIONÁRIO ===================
+class TelaFuncionario(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("TELA FUNCIONÁRIO")
-        self.geometry("600x400")
+        self.title("Mecânica Masters - Funcionários")
+        self.geometry("1000x600")
         self.resizable(False, False)
 
-        tk.Label(self, text="TELA FUNCIONÁRIO", font=("Arial", 16, "bold")).pack(pady=20)
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Button(self, text="Cadastrar Funcionário", width=30, command=self.tela_cadastro_funcionario).pack(pady=5)
-        tk.Button(self, text="Consultar Funcionário", width=30, command=self.consultar_funcionario).pack(pady=5)
-        tk.Button(self, text="Modificar Funcionário", width=30, command=self.tela_modificar_funcionario).pack(pady=5)
-        tk.Button(self, text="Voltar", width=30, command=self.voltar).pack(pady=25)
+        # =================== NAVBAR ===================
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
+
+        logo_nav = ctk.CTkImage(light_image=Image.open("img/logo.png"), size=(40, 40))
+        ctk.CTkLabel(navbar, image=logo_nav, text="").pack(side="left", padx=20)
+
+        botoes_menu = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Produtos", self.abrir_tela_produto),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", lambda: None),
+            ("Clientes", self.abrir_tela_cliente)
+        ]
+
+        for texto, comando in botoes_menu:
+            ctk.CTkButton(navbar, text=texto, command=comando,
+                          fg_color="transparent", hover_color="#E1E1E1",
+                          text_color="#222", font=("Arial", 13, "bold"),
+                          width=100, height=35).pack(side="left", padx=4)
+
+        # =================== CONTEÚDO ===================
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Gerenciamento de Funcionários",
+                     font=("Arial Black", 28, "bold"),
+                     text_color="#222").pack(pady=(80, 30))
+
+        botoes_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        botoes_frame.pack(pady=40)
+
+        ctk.CTkButton(botoes_frame, text="Cadastrar Funcionário",
+                      width=200, height=45,
+                      fg_color="black", text_color="white",
+                      hover_color="#333",
+                      command=self.abrir_cadastro).pack(side="left", padx=15)
+
+        ctk.CTkButton(botoes_frame, text="Consultar Funcionário",
+                      width=200, height=45,
+                      fg_color="white", text_color="black",
+                      hover_color="#E1E1E1",
+                      command=self.abrir_consultar).pack(side="left", padx=15)
+
+        ctk.CTkButton(botoes_frame, text="Modificar Funcionário",
+                      width=200, height=45,
+                      fg_color="black", text_color="white",
+                      hover_color="#333",
+                      command=self.abrir_modificar).pack(side="left", padx=15)
 
         self.mainloop()
 
-    def tela_cadastro_funcionario(self):
-        Metodos.limpar_tela(self)
+    # =================== NAVEGAÇÃO ===================
+    def abrir_cadastro(self):
+        self.destroy()
+        CadastroFuncionario()
 
-        tk.Label(self, text="TELA CADASTRO FUNCIONÁRIO", font=("Arial", 16, "bold")).pack(pady=20)
+    def abrir_consultar(self):
+        self.destroy()
+        ConsultarFuncionario()
 
-        tk.Label(self, text="Nome do Funcionário:").pack()
-        self.entry_nome = tk.Entry(self, width=40)
-        self.entry_nome.pack(pady=5)
+    def abrir_modificar(self):
+        self.destroy()
+        ModificarFuncionario()
 
-        tk.Label(self, text="CPF:").pack()
-        self.entry_cpf = tk.Entry(self, width=40)
-        self.entry_cpf.pack(pady=5)
+    def voltar_tela_inicial(self):
+        from TelaPrincipal import TelaPrincipal
+        self.destroy()
+        TelaPrincipal().mainloop()
+
+    def abrir_tela_produto(self):
+        self.destroy()
+        from TelaProduto import TelaProduto
+        TelaProduto()
+
+    def abrir_tela_servico(self):
+        self.destroy()
+        from TelaServico import TelaServico
+        TelaServico()
+
+    def abrir_tela_cliente(self):
+        self.destroy()
+        from TelaCliente import TelaCliente
+        TelaCliente()
+
+
+# =================== CADASTRO FUNCIONÁRIO ===================
+class CadastroFuncionario(ctk.CTk):
+    def __init__(self):
+        super().__init__()
+        self.title("Cadastrar Funcionário")
+        self.geometry("1000x600")
+        self.resizable(False, False)
+
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
+
+        self.criar_navbar()
+
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Cadastrar Funcionário", font=("Arial Black", 26, "bold")).pack(pady=(60, 20))
+
+        self.entry_nome = Metodos.criar_entry(frame, "Nome do Funcionário:")
+        self.entry_cpf = Metodos.criar_entry(frame, "CPF:")
         self.entry_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf))
+        self.entry_login = Metodos.criar_entry(frame, "Login:")
+        self.entry_senha = Metodos.criar_entry(frame, "Senha:")
 
-        tk.Label(self, text="Login:").pack()
-        self.entry_login = tk.Entry(self, width=40)
-        self.entry_login.pack(pady=5)
+        ctk.CTkButton(frame, text="Salvar", width=200, height=40, command=self.salvar).pack(pady=20)
+        ctk.CTkButton(frame, text="Voltar para Funcionários", width=200, height=40,
+                      fg_color="#6c757d", command=self.voltar).pack()
 
-        tk.Label(self, text="Senha:").pack()
-        self.entry_senha = tk.Entry(self, width=40, show="*")
-        self.entry_senha.pack(pady=5)
+        self.mainloop()
 
-        tk.Button(self, text="Salvar", width=15, command=self.salvar).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_funcionario).pack()
+    def criar_navbar(self):
+        navbar = ctk.CTkFrame(self, height=60, fg_color="#F8F9FA")
+        navbar.pack(fill="x", side="top")
+
+        logo_nav = ctk.CTkImage(light_image=Image.open("img/logo.png"), size=(40, 40))
+        ctk.CTkLabel(navbar, image=logo_nav, text="").pack(side="left", padx=20)
+
+        botoes = [
+            ("Tela inicial", self.voltar_tela_inicial),
+            ("Produtos", self.abrir_tela_produto),
+            ("Serviços", self.abrir_tela_servico),
+            ("Funcionários", self.voltar),
+            ("Clientes", self.abrir_tela_cliente)
+        ]
+
+        for texto, cmd in botoes:
+            ctk.CTkButton(navbar, text=texto, command=cmd,
+                          fg_color="transparent", hover_color="#E1E1E1",
+                          text_color="#222", font=("Arial", 13, "bold"),
+                          width=100, height=35).pack(side="left", padx=4)
 
     def salvar(self):
         nome = self.entry_nome.get().strip()
@@ -58,82 +170,136 @@ class TelaFuncionario(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
-            cursor.execute("""
-                INSERT INTO funcionarios (cpf, nome, login, senha)
-                VALUES (?, ?, ?, ?)
-            """, (cpf, nome, login, senha))
+            cursor.execute("INSERT INTO funcionarios (cpf, nome, login, senha) VALUES (?, ?, ?, ?)",
+                           (cpf, nome, login, senha))
             conexao.commit()
             Metodos.msg_info("Sucesso", "Funcionário cadastrado com sucesso!")
             Metodos.limpar_campos(self.entry_nome, self.entry_cpf, self.entry_login, self.entry_senha)
         except sqlite3.IntegrityError:
             Metodos.msg_erro("Erro", "CPF ou login já cadastrado.")
         except sqlite3.Error as erro:
-            Metodos.msg_erro("Erro", f"Ocorreu um erro ao salvar: {erro}")
+            Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
         finally:
             Metodos.fechar(conexao)
 
-    def limpar_campos(self):
-        Metodos.limpar_campos(self.entry_nome, self.entry_cpf, self.entry_login, self.entry_senha)
+    def voltar(self):
+        self.destroy()
+        TelaFuncionario()
 
-    def consultar_funcionario(self):
+    # Navegação comum
+    def voltar_tela_inicial(self):
+        from TelaPrincipal import TelaPrincipal
+        self.destroy()
+        TelaPrincipal().mainloop()
+    def abrir_tela_produto(self):
+        self.destroy()
+        from TelaProduto import TelaProduto
+        TelaProduto()
+
+    def abrir_tela_servico(self):
+        self.destroy()
+        from TelaServico import TelaServico
+        TelaServico()
+
+    def abrir_tela_cliente(self):
+        self.destroy()
+        from TelaCliente import TelaCliente
+        TelaCliente()
+
+
+# =================== CONSULTAR FUNCIONÁRIO ===================
+class ConsultarFuncionario(CadastroFuncionario):
+    def __init__(self):
+        super().__init__()
+        self.title("Consultar Funcionário")
         Metodos.limpar_tela(self)
-        tk.Label(self, text="CONSULTAR FUNCIONÁRIO", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Label(self, text="Digite CPF do Funcionário:").pack()
-        self.entry_consulta = tk.Entry(self, width=40)
-        self.entry_consulta.pack(pady=5)
-        self.entry_consulta.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_consulta))
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Button(self, text="Consultar", width=15, command=self.exibir_funcionario).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_funcionario).pack(pady=10)
+        self.criar_navbar()
 
-        self.frame_resultado = tk.Frame(self)
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Consultar Funcionário", font=("Arial Black", 26, "bold")).pack(pady=(60, 20))
+
+        self.entry_cpf = Metodos.criar_entry(frame, "Digite o CPF do Funcionário:")
+        self.entry_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf))
+
+        ctk.CTkButton(frame, text="Consultar", width=200, height=40, command=self.consultar).pack(pady=20)
+
+        self.frame_resultado = ctk.CTkFrame(frame, fg_color="transparent")
         self.frame_resultado.pack(pady=10)
 
-    def exibir_funcionario(self):
-        for widget in self.frame_resultado.winfo_children():
-            widget.destroy()
+        ctk.CTkButton(frame, text="Voltar para Funcionários", width=200, height=40,
+                      fg_color="#6c757d", command=self.voltar).pack()
 
-        cpf = self.entry_consulta.get().strip()
+    def consultar(self):
+        for w in self.frame_resultado.winfo_children():
+            w.destroy()
+
+        cpf = self.entry_cpf.get().strip()
         if not cpf:
-            tk.Label(self.frame_resultado, text="Digite o CPF!", fg="red").pack()
+            ctk.CTkLabel(self.frame_resultado, text="Digite o CPF!", text_color="red").pack()
             return
 
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
             cursor.execute("SELECT nome, login, senha FROM funcionarios WHERE cpf = ?", (cpf,))
-            resultado = cursor.fetchone()
-            if resultado:
-                nome, login, senha = resultado
-                tk.Label(self.frame_resultado, text=f"Nome: {nome}", font=("Arial", 12)).pack(anchor="w")
-                tk.Label(self.frame_resultado, text=f"Login: {login}", font=("Arial", 12)).pack(anchor="w")
-                tk.Label(self.frame_resultado, text=f"Senha: {senha}", font=("Arial", 12)).pack(anchor="w")
+            func = cursor.fetchone()
+            if func:
+                ctk.CTkLabel(self.frame_resultado, text=f"Nome: {func[0]}", font=("Arial", 14)).pack(anchor="w")
+                ctk.CTkLabel(self.frame_resultado, text=f"Login: {func[1]}", font=("Arial", 14)).pack(anchor="w")
+                ctk.CTkLabel(self.frame_resultado, text=f"Senha: {func[2]}", font=("Arial", 14)).pack(anchor="w")
             else:
-                tk.Label(self.frame_resultado, text="Funcionário não encontrado!", fg="red").pack()
+                ctk.CTkLabel(self.frame_resultado, text="Funcionário não encontrado!", text_color="red").pack()
         except sqlite3.Error as erro:
-            tk.Label(self.frame_resultado, text=f"Ocorreu um erro: {erro}", fg="red").pack()
+            ctk.CTkLabel(self.frame_resultado, text=f"Erro: {erro}", text_color="red").pack()
         finally:
             Metodos.fechar(conexao)
 
-    def tela_modificar_funcionario(self):
+
+# =================== MODIFICAR FUNCIONÁRIO ===================
+class ModificarFuncionario(CadastroFuncionario):
+    def __init__(self):
+        super().__init__()
+        self.title("Modificar Funcionário")
         Metodos.limpar_tela(self)
-        tk.Label(self, text="MODIFICAR FUNCIONÁRIO", font=("Arial", 16, "bold")).pack(pady=20)
 
-        tk.Label(self, text="Digite CPF do Funcionário:").pack()
-        self.entry_mod_cpf = tk.Entry(self, width=40)
-        self.entry_mod_cpf.pack(pady=5)
-        self.entry_mod_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_mod_cpf))
+        caminho_icon = os.path.join(os.path.dirname(__file__), "img/logo.ico")
+        self.iconbitmap(caminho_icon)
 
-        tk.Button(self, text="Buscar Funcionário", width=15, command=self.carregar_funcionario).pack(pady=15)
-        tk.Button(self, text="Voltar", width=15, command=self.voltar_funcionario).pack()
+        self.criar_navbar()
 
-    def carregar_funcionario(self):
-        cpf = self.entry_mod_cpf.get().strip()
+        frame = ctk.CTkFrame(self, fg_color="transparent")
+        frame.pack(expand=True)
+
+        ctk.CTkLabel(frame, text="Modificar Funcionário", font=("Arial Black", 26, "bold")).pack(pady=(60, 20))
+
+        self.entry_cpf = Metodos.criar_entry(frame, "Digite o CPF do Funcionário:")
+        self.entry_cpf.bind("<KeyRelease>", lambda e: Metodos.formatar_cpf(self.entry_cpf))
+
+        ctk.CTkButton(frame, text="Buscar Funcionário", width=200, height=40, command=self.buscar).pack(pady=10)
+
+        self.frame_edicao = ctk.CTkFrame(frame, fg_color="transparent")
+        self.frame_edicao.pack(pady=10)
+
+        ctk.CTkButton(frame, text="Voltar para Funcionários", width=200, height=40,
+                      fg_color="#6c757d", command=self.voltar).pack()
+
+    def buscar(self):
+        for w in self.frame_edicao.winfo_children():
+            w.destroy()
+
+        cpf = self.entry_cpf.get().strip()
         if not cpf:
             Metodos.msg_aviso("Atenção", "Digite o CPF!")
             return
@@ -141,45 +307,29 @@ class TelaFuncionario(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
             cursor.execute("SELECT nome, login, senha FROM funcionarios WHERE cpf = ?", (cpf,))
-            resultado = cursor.fetchone()
-            if resultado:
-                nome, login, senha = resultado
-                Metodos.limpar_tela(self)
+            func = cursor.fetchone()
+            if func:
+                self.entry_nome = Metodos.criar_entry(self.frame_edicao, "Nome:", func[0])
+                self.entry_login = Metodos.criar_entry(self.frame_edicao, "Login:", func[1])
+                self.entry_senha = Metodos.criar_entry(self.frame_edicao, "Senha:", func[2])
 
-                tk.Label(self, text="MODIFICAR FUNCIONÁRIO", font=("Arial", 16, "bold")).pack(pady=20)
-
-                tk.Label(self, text="Nome:").pack()
-                self.entry_nome_mod = tk.Entry(self, width=40)
-                self.entry_nome_mod.pack(pady=5)
-                self.entry_nome_mod.insert(0, nome)
-
-                tk.Label(self, text="Login:").pack()
-                self.entry_login_mod = tk.Entry(self, width=40)
-                self.entry_login_mod.pack(pady=5)
-                self.entry_login_mod.insert(0, login)
-
-                tk.Label(self, text="Senha:").pack()
-                self.entry_senha_mod = tk.Entry(self, width=40)
-                self.entry_senha_mod.pack(pady=5)
-                self.entry_senha_mod.insert(0, senha)
-
-                tk.Button(self, text="Salvar Alterações", width=15,
-                          command=lambda: self.salvar_modificacoes(cpf)).pack(pady=15)
-                tk.Button(self, text="Voltar", width=15, command=self.voltar_funcionario).pack()
+                ctk.CTkButton(self.frame_edicao, text="Salvar Alterações", width=200, height=40,
+                              command=lambda: self.salvar(cpf)).pack(pady=15)
             else:
-                Metodos.msg_info("Não encontrado", "Funcionário não encontrado!")
+                Metodos.msg_info("Aviso", "Funcionário não encontrado!")
         except sqlite3.Error as erro:
             Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
         finally:
             Metodos.fechar(conexao)
 
-    def salvar_modificacoes(self, cpf):
-        nome = self.entry_nome_mod.get().strip()
-        login = self.entry_login_mod.get().strip()
-        senha = self.entry_senha_mod.get().strip()
+    def salvar(self, cpf):
+        nome = self.entry_nome.get().strip()
+        login = self.entry_login.get().strip()
+        senha = self.entry_senha.get().strip()
 
         if not Metodos.campos_preenchidos(nome, login, senha):
             Metodos.msg_aviso("Atenção", "Preencha todos os campos!")
@@ -188,25 +338,19 @@ class TelaFuncionario(tk.Tk):
         conexao = Metodos.conectar()
         if not conexao:
             return
+
         try:
             cursor = conexao.cursor()
-            cursor.execute("UPDATE funcionarios SET nome = ?, login = ?, senha = ? WHERE cpf = ?",
+            cursor.execute("UPDATE funcionarios SET nome=?, login=?, senha=? WHERE cpf=?",
                            (nome, login, senha, cpf))
             conexao.commit()
-            Metodos.msg_info("Sucesso", "Dados do funcionário atualizados com sucesso!")
+            Metodos.msg_info("Sucesso", "Funcionário atualizado com sucesso!")
             self.voltar()
         except sqlite3.Error as erro:
             Metodos.msg_erro("Erro", f"Ocorreu um erro: {erro}")
         finally:
             Metodos.fechar(conexao)
 
-    def voltar_funcionario(self):
-        self.destroy()
-        TelaFuncionario()
 
-    def voltar(self):
-        self.destroy()
-        TelaPrincipal()
-
-    def limpar_tela(self):
-        Metodos.limpar_tela(self)
+if __name__ == "__main__":
+    TelaFuncionario()
