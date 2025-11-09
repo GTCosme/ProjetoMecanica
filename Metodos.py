@@ -89,21 +89,24 @@ class Metodos:
         return re.match(padrao, email) is not None
 
     @staticmethod
-    def formatar_moeda(entry):
+    def formatar_moeda(entry, evento=None):
         texto = entry.get()
+        # Remove tudo que não for número
+        texto = ''.join(filter(str.isdigit, texto))
+
         if not texto:
+            entry.delete(0, tk.END)
             return
-        # Remove qualquer caractere que não seja número ou ponto/virgula
-        texto = texto.replace("R$", "").replace(".", "").replace(",", ".").strip()
-        try:
-            valor = float(texto)
-            # Formata Moeda
-            valor_formatado = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            entry.delete(0, tk.END)
-            entry.insert(0, valor_formatado)
-        except ValueError:
-            entry.delete(0, tk.END)
-            entry.insert(0, "R$ 0,00")
+
+        # Converte o número inteiro para float (centavos)
+        valor = int(texto) / 100
+
+        # Formata no estilo brasileiro
+        valor_formatado = f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+        # Atualiza o campo
+        entry.delete(0, tk.END)
+        entry.insert(0, valor_formatado)
 
     # ---------- Mensagens ----------
     @staticmethod

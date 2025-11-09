@@ -118,7 +118,8 @@ class TelaPrincipal(ctk.CTk):
     def abrir_tela_produto(self):
         self.destroy()
         from TelaProduto import TelaProduto
-        TelaProduto()
+        app = TelaProduto()
+        app.mainloop()
 
     def abrir_tela_servico(self):
         self.destroy()
